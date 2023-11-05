@@ -1,4 +1,4 @@
-const ws = new WebSocket("wss://192.168.1.53:8080");
+const ws = new WebSocket("ws://localhost:8080");
 const MESSAGE_TYPES = {
     NEW_PLAYER : 0,
     PLAYER_START_MOVING : 1,
