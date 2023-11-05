@@ -1,4 +1,4 @@
-const ws = new WebSocket("ws://localhost:8080");
+const ws = new WebSocket("wss://bunnypower-online-multiplayer.onrender.com/");
 const MESSAGE_TYPES = {
     NEW_PLAYER : 0,
     PLAYER_START_MOVING : 1,
