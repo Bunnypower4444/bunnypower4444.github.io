@@ -1,31 +1,7 @@
-body {
-  font-family: Trebuchet MS;
+html, body {
+  margin: 0;
+  padding: 0;
 }
-
-.topnav {
-  top: 0;
-  font-family: Trebuchet MS;
-  margin: 0px;
-  overflow: hidden;
-  background-color: lightgray;
-  width: 100%;
-}
-
-.topnav a {
-  float: left;
-  color: #f2f2f2;
-  text-align: center;
-  padding: 20px 25px;
-  text-decoration: none;
-  font-size: 17px;
-}
-  
-.topnav a:hover {
-  background-color: lightgray;
-  color: black;
-}
-  
-.topnav a.active {
-  background-color: lightblue;
-  color: white;
+canvas {
+  display: block;
 }
