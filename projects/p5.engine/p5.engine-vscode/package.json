@@ -1,0 +1,140 @@
+{
+	"name": "p5.engine-vscode",
+	"description": "p5.engine editor extension",
+	"version": "0.0.1",
+	"publisher": "Bunnypower",
+	"engines": {
+		"vscode": "^1.74.0"
+	},
+	"activationEvents": ["onStartupFinished"],
+	"main": "./extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "p5-engine.helloWorld",
+				"title": "Hello World",
+				"category": "p5.engine"
+			},
+            {
+                "command": "p5-engine.addShape",
+                "title": "Add Shape",
+				"category": "p5.engine"
+            },
+            {
+                "command": "p5-engine.addShapeFromList",
+                "title": "Add Shape",
+				"category": "p5.engine"
+            },
+			{
+				"command": "p5-engine.setupEditor",
+				"title": "Setup Editor",
+				"category": "p5.engine",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "p5-engine.addItem",
+				"title": "Add Item",
+				"category": "p5.engine",
+				"icon": "$(add)"
+			},
+			{
+				"command": "p5-engine.deleteItem",
+				"title": "Delete Item",
+				"category": "p5.engine",
+				"icon": "$(trash)"
+			},
+			{
+				"command": "p5-engine.save",
+				"title": "Save Changes",
+				"category": "p5-engine",
+				"icon": "$(save)"
+			},
+			{
+				"command": "p5-engine.editItem",
+				"title": "Edit Item",
+				"category": "p5-engine",
+				"icon": "$(pencil)"
+			},
+			{
+				"command": "p5-engine.refreshEditor",
+				"title": "Refresh Editor",
+				"category": "p5.engine",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "p5-engine.copyItems",
+				"title": "Copy",
+				"category": "p5-engine"
+			},
+			{
+				"command": "p5-engine.pasteItems",
+				"title": "Paste",
+				"category": "p5-engine"
+			}
+		],
+		"views" : {
+			"explorer": [
+				{
+					"id": "p5-engine.treeView",
+					"name": "p5.engine Explorer"
+				}
+			]
+		},
+		"viewsWelcome": [
+			{
+				"view" : "p5-engine.treeView",
+				"contents": "The engine editor has not been set up yet.\n[Set Up Editor](command:p5-engine.setupEditor)"
+			}
+		],
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "p5-engine.editItem",
+					"group": "inline@1",
+					"when": "view == p5-engine.treeView"
+				},
+				{
+					"command": "p5-engine.addItem",
+					"group": "inline@2",
+					"when": "view == p5-engine.treeView"
+				},
+				{
+					"command": "p5-engine.deleteItem",
+					"group": "inline@3",
+					"when": "view == p5-engine.treeView && viewItem != sketch"
+				},
+				{
+					"command": "p5-engine.copyItems",
+					"when": "view == p5-engine.treeView && viewItem != sketch"
+				},
+				{
+					"command": "p5-engine.pasteItems",
+					"when": "view == p5-engine.treeView"
+				}
+			],
+			"view/title": [
+				{
+					"command": "p5-engine.refreshEditor",
+					"group": "navigation@1",
+					"when": "view == p5-engine.treeView"
+				}
+			]
+		},
+		"keybindings":[
+			{
+				"command": "p5-engine.refreshEditor",
+				"key": "Cmd+R",
+				"when": "isMac"
+			},
+			{
+				"command": "p5-engine.refreshEditor",
+				"key": "Ctrl+R",
+				"when": "!isMac"
+			}
+		]
+	},
+	"scripts": {},
+	"devDependencies": {
+		"@types/vscode": "^1.73.0"
+	}
+}
