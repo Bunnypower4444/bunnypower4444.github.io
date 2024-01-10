@@ -1953,7 +1953,6 @@ function processUpdates() {
         //needToClearUpdatedChips = false;
     }
     else if (newUpdates.length) {
-        console.log("There were updates")
         updates = [...newUpdates];
         newUpdates = [];
         for (let u of updates) u();
