@@ -1,0 +1,7 @@
+{
+    "include": ["*.js", "**/*.js", "../p5.engine/sketch.js"],
+    "compilerOptions": {
+        "target": "ESNext",
+        "checkJs": true
+    }
+}
