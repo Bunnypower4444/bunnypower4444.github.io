@@ -1,6 +1,5 @@
 /**
  * @todo
- * - Remove Input and Output and use ChipPin instead
  * - Organize code, maybe put some functions into classes (like copyChip() could be Chip.copy())
  * - Fix extra gates changing color
  * - Make it so wires aren't just a straight line, and can click wires for deleting/add a wire by dragging off of one
@@ -319,12 +318,9 @@ function draw() {
 function processUpdates() {
     if (paused) return;
     //process floating pins that haven't been updated with correct value yet
+    //input pins also appear as floating, so they are accounted too
     for (let i of ChipPin.floatingPins) {
         if (!i.valueUpToDate) i.update(false);
-    }
-    //process inputs so the rest of the chip can get initialized (this is mainly for when you first load a chip to get the initial values correct)
-    for (let i of Input.allInputsInUse) {
-        if (!i.valueUpToDate) i.update(i.value);
     }
     
     if (immediateUpdate) {
@@ -677,7 +673,7 @@ function getWiresDestinations(wires) {
  */
 function loadChip(data) {
     if (data.name == "") { //load workspace
-        workspaceChip = new Chip("Workspace", data.inputs.length, data.outputs.length, true);
+        workspaceChip = new Chip("Workspace", NUM_INPUTS_OUTPUTS, NUM_INPUTS_OUTPUTS, true);
         //clear all existing chips
         sketch.children.CreateScreen.children.Workspace.getChildren().forEach(v => {
             if (v instanceof ChipDisplay) {
@@ -711,7 +707,7 @@ function loadChip(data) {
                 let newWire;
                 new WireDisplay(newWire = new Wire(start));
                 if (typeof wire == "number") {
-                    newWire.end = sketch.children.CreateScreen.children.OutputBar.children["Output" + wire];
+                    newWire.end = workspaceChip.outputs[wire];
                 } else if (Array.isArray(wire)) {
                     if (processedChips[wire[0]]) {
                         newWire.end = processedChips[wire[0]].inputs[wire[1]];
@@ -730,7 +726,7 @@ function loadChip(data) {
             }
         }
         for (let i of data.inputs) {
-            recursiveLoad(i.wires, sketch.children.CreateScreen.children.InputBar.children["Input" + i.id])
+            recursiveLoad(i.wires, workspaceChip.inputs[i.id])
         }
     } else {
         new ChipButton(data, data.color);
@@ -950,7 +946,7 @@ class Output extends Rect {
                 if (!this.inUse && this.chipPin.wire) this.chipPin.wire.delete();
                 thisShape.children.Ellipse.visible = this.inUse;
                 thisShape.children.Ellipse.active = this.inUse;
-                thisShape.chipPin.value = false;
+                this.chipPin.value = false;
                 thisShape.children.Ellipse.fillColor = colors.DARK_NODE;
             }
         })
