@@ -324,7 +324,7 @@ var mySketchObject = {
                     scalarH : 0.95,
                     anchorX : 0,
                     anchorY : 0,
-                    fillColor : 32,
+                    fillColor : [0, 0],
                     strokeColor : 0,
                     strokeWeight : 0,
                     scale : 1,
