@@ -836,7 +836,7 @@ class CycleDetector {
             let chipsOnPath = [];
             let id = subChip.id;
             if (!(subChip instanceof BuiltInChip)) CycleDetector.updateCycles(subChip, cyclicPinList);
-            this.markChipInputCycles(id, id, connectionsOutByChipID, chipsOnPath);
+            this.markChipInputCycles(id, id, connectionsOutByChipID, chipsOnPath, cyclicPinList);
         }
         this.cyclicPins = cyclicPinList;
     }
@@ -849,8 +849,9 @@ class CycleDetector {
      * @param {number} subChipID 
      * @param {Object<number, Wire[]>} connectionsOutByChipID 
      * @param {number[]} chipsOnPath 
+     * @param {ChipPin[]} cyclicPinList 
      */
-    static markChipInputCycles(initialSubChipID, subChipID, connectionsOutByChipID, chipsOnPath) {
+    static markChipInputCycles(initialSubChipID, subChipID, connectionsOutByChipID, chipsOnPath, cyclicPinList) {
         // If this chip has already been seen on this path, then we're in a cycle, but not one that comes back to the original chip.
         // So, just break out of it.
         if (chipsOnPath.includes(subChipID)) return;
@@ -866,11 +867,11 @@ class CycleDetector {
                 if (outputWire.end.parentChip.id == initialSubChipID)
                 {
                     outputWire.end.isCyclic = true;
-                    this.cyclicPins.push(outputWire.end);
+                    cyclicPinList.push(outputWire.end);
                 }
                 else
                 {
-                    this.markChipInputCycles(initialSubChipID, outputWire.end.parentChip.id, connectionsOutByChipID, chipsOnPath);
+                    this.markChipInputCycles(initialSubChipID, outputWire.end.parentChip.id, connectionsOutByChipID, chipsOnPath, cyclicPinList);
                 }
             }
         }
