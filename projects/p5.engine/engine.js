@@ -222,7 +222,10 @@ class Shape extends EngineNode {
      * Rotation of the shape counter-clockwise in degrees.
      * The point the shape rotates around depends on anchorX and anchorY. For triangles and custom shapes, it depends on actualX and actualY, since they are defined by their vertices instead.
     */rotation = 0;
-    fillColor = 128; strokeColor = 0; strokeWeight = 1; 
+    /**@type {number | string | number[]} */
+    fillColor = 128;
+    /**@type {number | string | number[]} */
+    strokeColor = 0; strokeWeight = 1; 
     visible = true; active = true;
     //#endregion
 
@@ -361,8 +364,8 @@ class Shape extends EngineNode {
      */
     static rotatePoint(x, y, cx, cy, rotation) {
         return [
-            (x - cx) * Math.cos(Math.PI * rotation/180) - (y - cy) * Math.sin(Math.PI * rotation/180) + cx,
-            (x - cx) * Math.sin(Math.PI * rotation/180) + (y - cy) * Math.cos(Math.PI * rotation/180) + cy,
+            (x - cx) * Math.cos(rotation) - (y - cy) * Math.sin(rotation) + cx,
+            (x - cx) * Math.sin(rotation) + (y - cy) * Math.cos(rotation) + cy,
         ];
     }
 
@@ -507,7 +510,7 @@ class Ellipse extends Shape {
         //center coordinates
         let cx = this.actualX + (0.5 - this.anchorX) * this.actualW, cy = this.actualY + (0.5 - this.anchorY) * this.actualH;
         //rotated mouse coordinates
-        let [mx, my] = Shape.rotatePoint(mouseX, mouseY, cx, cy, -this.rotation);
+        let [mx, my] = Shape.rotatePoint(mouseX, mouseY, cx, cy, -this.rotation * Math.PI/180);
         
         return Math.pow(mx - cx, 2) / Math.pow(this.actualW/2 * this.scale, 2) + Math.pow(my - cy, 2) / Math.pow(this.actualH/2 * this.scale, 2) <= 1;
     }
@@ -604,7 +607,7 @@ class Triangle extends Shape {
 
     mouseIsOver() {
         //rotated mouse coordinates
-        let [mx, my] = Shape.rotatePoint(mouseX, mouseY, this.actualX + this.parent.actualX, this.actualY + this.parent.actualY, -this.rotation);
+        let [mx, my] = Shape.rotatePoint(mouseX, mouseY, this.actualX + this.parent.actualX, this.actualY + this.parent.actualY, -this.rotation * Math.PI/180);
 
         let x1 = (this.vertices[0].x + this.vertices[0].scalarX * this.parent.actualW) * this.scale + this.actualX;
         let y1 = (this.vertices[0].y + this.vertices[0].scalarY * this.parent.actualH) * this.scale + this.actualY;
@@ -718,7 +721,7 @@ class CustomPolygon extends Shape {
         //split into triangles and check each one individually
         //skip first because that will be in each triangle
         let l = this.vertices.length - 1;
-        let [mx, my] = Shape.rotatePoint(mouseX, mouseY, this.actualX, this.actualY, -this.rotation);
+        let [mx, my] = Shape.rotatePoint(mouseX, mouseY, this.actualX, this.actualY, -this.rotation * Math.PI/180);
         let p1x = (this.vertices[0].x + this.vertices[0].scalarX * this.parent.actualW) * this.scale + this.actualX;
         let p1y = (this.vertices[0].y + this.vertices[0].scalarY * this.parent.actualH) * this.scale + this.actualY;
         let p2x, p2y, p3x, p3y;
@@ -1410,97 +1413,89 @@ function initializeEngine(sketchObj, options) {
     });
 }
 
-class SketchObject {
-    w = 100; scalarW = 0; h = 100; scalarH = 0; fillColor = 220;
-    /**@type {(NodeObject | ShapeObject | ScriptObject | ValueObject)[]}*/
-    children;
-}
+/**
+ * @typedef {Object} SketchObject
+ * @property {number} [w=100]
+ * @property {number} [scalarW=0]
+ * @property {number} [h=100]
+ * @property {number} [scalarH=0]
+ * @property {number | string | number[]} [fillColor=220]
+ * @property {(NodeObject | ShapeObject | ScriptObject | ValueObject)[]} [children]
+ */
 
-class NodeObject {
-    name = "";
-    /**
-     * The type of object it is.
-     * @type {"Shape" | "Script" | "Value"}
-     */
-    type;
-    /**@type {(NodeObject | ShapeObject | ScriptObject | ValueObject)[]}*/
-    children;
-}
+/**
+ * @typedef {Object} NodeObject
+ * @property {string} name
+ * @property {"Shape" | "Script" | "Value"} type
+ * @property {(NodeObject | ShapeObject | ScriptObject | ValueObject)[]} children
+ */
 
-class ShapeObject extends NodeObject {
-    /**
-     * @type {"Rect" | "Ellipse" | "Triangle" | "CustomPolygon" | "CustomPolygonCurved" | "Text" | "CustomShape"}
-     */
-    shapeType;
+/**
+ * @typedef {Object} ShapeObject
+ * @property {"Rect" | "Ellipse" | "Triangle" | "CustomPolygon" | "CustomPolygonCurved" | "Text" | "CustomShape"} shapeType
+ * @property {number} [x=0]
+ * @property {number} [y=0]
+ * @property {number} [w=0]
+ * @property {number} [h=0] 
+ * @property {number} [scalarX=0]
+ * @property {number} [scalarY=0]
+ * @property {number} [scalarW=0]
+ * @property {number} [scalarH=0]
+ * 
+ * @property {{x : number, scalarX? : number, y : number, scalarY? : number}[]} [vertices=[]]
+ * For triangles and custom shapes:
+ * List of coordinate pairs, which are stored as [{x, scalarX, y, scalarY}]
+ * 
+ * @property {number} [anchorX=0] 
+ * A number between 0 and 1 that specifies where the shape should be aligned horizontally (e.g. 0 is left side, 0.5 is center, 1 is right side). Also used as the origin for rotating and scaling except for in triangles and custom shapes 
+ * 
+ * @property {number} [anchorY=0] 
+ * A number between 0 and 1 that specifies where the shape should be aligned vertically (e.g. 0 is top side, 0.5 is center, 1 is bottom side). Also used as the origin for rotating and scaling except for in triangles and custom shapes.
+ * @property {string} [text=""]
+ * 
+ * @property {LEFT | CENTER | RIGHT} [textAlignHorizontal="center"] Specifies horizontal text alignment for text shapes. 
+ * @property {TOP | CENTER | BOTTOM | BASELINE} [textAlignVertical="center"] Specifies vertical text alignment for text shapes. 
+ * @property {number} [textSize = 18]
+ * 
+ * @property {number} [textSizeScalar = 0] Scalar text size based on parent element's height.
+ * @property {string} [textFont = "Arial"]
+ * 
+ * @property {NORMAL | BOLD | ITALIC | BOLDITALIC} [textStyle = "normal"] Specifies style of the text.
+ * @property {number} [scale = 1] 
+ * 
+ * @property {number} [rotation = 0]
+ * Rotation of the shape counter-clockwise in degrees.
+ * The point the shape rotates around depends on anchorX and anchorY. For triangles and custom shapes, it depends on actualX and actualY, since they are defined by their vertices instead.
+ * @property {number | string | number[]} [fillColor=128] 
+ * @property {number | string | number[]} [strokeColor=0]  
+ * @property {number} [strokeWeight = 1] 
+ * @property {boolean} [visible = true] 
+ * @property {boolean} [active = true]
+ *
+ * @property {number | number[]} [cornerCurve = 0]
+ * Corner curve of a rectangle. If the value is a number, that curve value is used for all corners. If it is an array, each value corresponds to a corner in the order: [top-left, top-right, bot-right, bot-left]
+ *
+ * @property {POINTS | LINES | TRIANGLES | TRIANGLE_FAN | TRIANGLE_STRIP | QUADS | QUAD_STRIP | TESS} [customPolygonType = null]
+ * The type of a custom shape, used with beginShape(). Will not be used with curved custom shapes.
+ *
+ * @property {CLOSE | null} [customPolygonEndType = "close"]
+ * Used with endShape(); Defaults to CLOSE
+ * @property {(thisShape: Shape) => void} [draw]
+ * @property {(thisShape: Shape) => void} [mouseIsOver]
+ */
 
-    x = 0; y = 0; w = 0; h = 0; 
-    scalarX = 0; scalarY = 0; scalarW = 0; scalarH = 0; 
-    /**
-     * For triangles and custom shapes:
-     * List of coordinate pairs, which are stored as [{x, scalarX, y, scalarY}]
-     * @type {{x : number, scalarX? : number, y : number, scalarY? : number}[]}
-     */
-    vertices = [];
-    /**
-     * A number between 0 and 1 that specifies where the shape should be aligned horizontally (e.g. 0 is left side, 0.5 is center, 1 is right side). Also used as the origin for rotating and scaling except for in triangles and custom shapes.
-    */anchorX = 0; 
-    /**
-     * A number between 0 and 1 that specifies where the shape should be aligned vertically (e.g. 0 is top side, 0.5 is center, 1 is bottom side). Also used as the origin for rotating and scaling except for in triangles and custom shapes.
-    */anchorY = 0; 
+/**
+ * @typedef {Object} ScriptObject
+ * @property {(thisScript : Script) => any} function
+ * A function containing the code for the script, passing an argument that is the script itself. Will be executed automatically. The return value is stored in this.returnValue
+ * @property {boolean} [disabled=false]
+ * If `disabled = true`, then the script will not run.
+ */
 
-    text = "";
-    /** Specifies horizontal text alignment for text shapes. @type {LEFT | CENTER | RIGHT} */textAlignHorizontal = "center";
-    /** Specifies vertical text alignment for text shapes. @type {TOP | CENTER | BOTTOM | BASELINE} */textAlignVertical = "center";
-    textSize = 18;
-    /** Scalar text size based on parent element's height. */textSizeScalar = 0;
-    textFont = "Arial";
-    /** Specifies style of the text. @type {NORMAL | BOLD | ITALIC | BOLDITALIC} */textStyle = "normal";
-    
-    scale = 1; 
-    /**
-     * Rotation of the shape counter-clockwise in degrees.
-     * The point the shape rotates around depends on anchorX and anchorY. For triangles and custom shapes, it depends on actualX and actualY, since they are defined by their vertices instead.
-    */rotation = 0;
-    fillColor = 128; strokeColor = 0; strokeWeight = 1; 
-    visible = true; active = true;
-
-    /**
-     * Corner curve of a rectangle. If the value is a number, that curve value is used for all corners. If it is an array, each value corresponds to a corner in the order: [top-left, top-right, bot-right, bot-left]
-     * @type {number | number[]}
-    */cornerCurve = 0;
-    /**
-     * The type of a custom shape, used with beginShape(). Will not be used with curved custom shapes.
-     * @type {POINTS | LINES | TRIANGLES | TRIANGLE_FAN | TRIANGLE_STRIP | QUADS | QUAD_STRIP | TESS}
-     */
-    customPolygonType = null;
-    /**
-     * Used with endShape(); Defaults to CLOSE
-     * @type {CLOSE | null}
-     */
-    customPolygonEndType = "close";
-
-    /**@type {(thisShape: Shape) => void} */
-    draw;
-    /**@type {(thisShape: Shape) => void} */
-    mouseIsOver;
-}
-
-class ScriptObject extends NodeObject {
-    /**
-     * A function containing the code for the script, passing an argument that is the script itself. Will be executed automatically. The return value is stored in this.returnValue
-     * @type {(thisScript : Script) => any} 
-     */
-    function;
-    /**
-     * If `disabled = true`, then the script will not run.
-     * @type {boolean}
-     */
-    disabled = false;
-}
-
-class ValueObject extends NodeObject {
-    value;
-}
+/**
+ * @typedef {Object} ValueObject
+ * @property {any} value
+ */
 
 /**
  * Manages scene switching and sets up scenes.
@@ -1582,4 +1577,149 @@ class EngineOptions {
      * @type {boolean}
      */
     noMouseDetection;
+}
+
+class Vector2 {
+    /**
+     * @param {number} x 
+     * @param {number} y 
+     */
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    /**
+     * Creates a new `Vector2` from a given angle (in radians) and magnitude.
+     * @param {number} angle Angle (radians)
+     * @param {number} magnitude 
+     * @returns {Vector2}
+     */
+    static fromAngle(angle, magnitude) {
+        return new Vector2(magnitude * cos(angle), magnitude * sin(angle));
+    }
+
+    /**
+     * Creates a new `Vector2` from a given angle (in degrees) and magnitude.
+     * @param {number} angle Angle (degrees)
+     * @param {number} magnitude 
+     * @returns {Vector2}
+     */
+    static fromAngleDegrees(angle, magnitude) {
+        return new Vector2(magnitude * cos(angle * Math.PI/180), magnitude * sin(angle * Math.PI/180));
+    }
+
+    /**
+     * @param {Vector2} other 
+     */
+    add(other) {
+        return new Vector2(this.x + other.x, this.y + other.y);
+    }
+
+    /**
+     * @param {Vector2} other 
+     */
+    sub(other) {
+        return new Vector2(this.x - other.x, this.y - other.y);
+    }
+
+    /**
+     * @overload
+     * @param {number} scalar 
+     * @returns {Vector2}
+     */
+    /**
+     * @overload
+     * @param {Vector2} other 
+     * @returns {Vector2}
+     */
+    mult(value) {
+        if (typeof value == "number") return new Vector2(this.x * value, this.y * value);
+        else return new Vector2(this.x * value.x, this.y * value.y);
+    }
+
+    /**
+     * @overload
+     * @param {number} scalar 
+     * @returns {Vector2}
+     */
+    /**
+     * @overload
+     * @param {Vector2} other 
+     * @returns {Vector2}
+     */
+    div(value) {
+        if (typeof value == "number") return new Vector2(this.x / value, this.y / value);
+        else return new Vector2(this.x / value.x, this.y / value.y);
+    }
+
+    /**
+     * @overload
+     * @param {number} value 
+     * @returns {Vector2}
+     */
+    /**
+     * @overload
+     * @param {Vector2} other 
+     * @returns {Vector2}
+     */
+    mod(value) {
+        if (typeof value == "number") return new Vector2(this.x % value, this.y % value);
+        else return new Vector2(this.x % value.x, this.y % value.y);
+    }
+
+    /**
+     * @param {Vector2} other 
+     * @returns {number}
+     */
+    dot(other) {
+        return this.x * other.x + this.y * other.y;
+    }
+
+    get magnitude() {
+        return Math.sqrt(this.magSq);
+    }
+    set magnitude(value) {
+        let newVector = Vector2.fromAngle(this.angle, value);
+        this.x = newVector.x;
+        this.y = newVector.y;
+    }
+    get magSq() {
+        return this.x ** 2 + y ** 2;
+    }
+
+    get angle() {
+        return Math.atan2(this.y, this.x);
+    }
+    set angle(value) {
+        let newVector = Vector2.fromAngle(value, this.magnitude);
+        this.x = newVector.x;
+        this.y = newVector.y;
+    }
+
+    normalize() {
+        return new Vector2(this.x / this.magnitude, this.y / this.magnitude);
+    }
+
+    /**
+     * @param {Vector2} other
+     * @param {number} amt
+     * @returns {Vector2}
+     */
+    lerp(other, amt) {
+        return new Vector2((other.x - this.x) * amt + this.x, (other.y - this.y) * amt + this.y);
+    }
+
+    /**
+     * @param {Vector2} other 
+     * @returns {boolean}
+     */
+    equals(other) {
+        if (this.x == other.x && y == other.y) return true;
+        return false;
+    }
+
+    toString() {
+        return `<${this.x}, ${this.y}>`
+    }
 }
