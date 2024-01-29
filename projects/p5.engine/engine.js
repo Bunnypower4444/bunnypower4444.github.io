@@ -1685,7 +1685,7 @@ class Vector2 {
         this.y = newVector.y;
     }
     get magSq() {
-        return this.x ** 2 + y ** 2;
+        return this.x ** 2 + this.y ** 2;
     }
 
     get angle() {
