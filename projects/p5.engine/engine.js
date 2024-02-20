@@ -1596,7 +1596,7 @@ class Vector2 {
      * @returns {Vector2}
      */
     static fromAngle(angle, magnitude) {
-        return new Vector2(magnitude * cos(angle), magnitude * sin(angle));
+        return new Vector2(magnitude * Math.cos(angle), magnitude * Math.sin(angle));
     }
 
     /**
@@ -1606,7 +1606,7 @@ class Vector2 {
      * @returns {Vector2}
      */
     static fromAngleDegrees(angle, magnitude) {
-        return new Vector2(magnitude * cos(angle * Math.PI/180), magnitude * sin(angle * Math.PI/180));
+        return new Vector2(magnitude * Math.cos(angle * Math.PI/180), magnitude * Math.sin(angle * Math.PI/180));
     }
 
     /**
