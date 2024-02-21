@@ -1002,27 +1002,25 @@ class TextLabel extends Shape {
 
 class CustomShape extends Shape {
     /**
-     * Creates a custom shape.
+     * Creates a custom shape. This should only be done by classes extending `CustomShape`.
      * @param {string} name The name of the CustomShape
      * @param {EngineNode} parent The parent of the CustomShape. Defaults to the sketch.
-     * @param {(thisShape: this, superDraw: function) => void} draw What the custom shape should draw. Make sure to call the function given by the second parameter at the end of the function.
-     * @param {(thisShape: this) => boolean} mouseIsOver Optional function to determine if the mouse is over the shape. If not given, there will be no mouse detection for this shape.
      * @param {Shape} [args] Optional arguments to the shape's properties.
      */
-    constructor(name, parent, draw, mouseIsOver, args) {
+    constructor(name, parent, args) {
         super(name, args || {}, parent, "CustomShape");
-        this.#draw = draw;
-        if (mouseIsOver) this.#mouseIsOver = mouseIsOver;
     }
 
-    #draw;
-    #mouseIsOver;
-
+    /**
+     * Should be overriden. Remeber to call super.draw() at the end.
+     */
     draw() {
-        this.#draw(this, super.draw.bind(this));
+        super.draw.bind(this);
     }
+    /**
+     * Should be overriden
+     */
     mouseIsOver() {
-        if (this.#mouseIsOver) return this.#mouseIsOver(this);
     }
 }
 
