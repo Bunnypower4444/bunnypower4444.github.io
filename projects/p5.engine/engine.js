@@ -1711,6 +1711,16 @@ class Vector2 {
     }
 
     /**
+     * @param {Vector2} centerPoint 
+     * @param {number} angle Rotation in radians
+     * @returns {Vector2}
+     */
+    rotate(centerPoint, angle) {
+        return new Vector2((this.x - centerPoint.x) * Math.cos(angle) - (this.y - centerPoint.y) * Math.sin(angle) + centerPoint.x,
+            (this.x - centerPoint.x) * Math.sin(angle) + (this.y - centerPoint.y) * Math.cos(angle) + centerPoint.y);
+    }
+
+    /**
      * @param {Vector2} other 
      * @returns {boolean}
      */
